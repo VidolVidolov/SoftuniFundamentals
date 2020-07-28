@@ -1,60 +1,47 @@
-function solve(input) {
+function solve(input){
+let string = input.shift();
+string = string.split('|');
+let counter = 0;
+let patternForCaps = /([\#\$\%\*\&])[A-Z]+\1/g;
+let patternForStartingLetter = /[\d]+:[\d]{2}/g;
+let finalPattern = /\s[A-Z][^\s]*[a-z]+/g;
+let caps = [];
+let capLettersAndRemainingLength = {};
+let result = [];
 
-    let numberOfMessages = Number(input.shift());
-    let patternCript = /[star]/gi;
-    let attacked = [];
-    let destroyed = [];
-    let countA = 0;
-    let countD = 0;
-    let pattern;
-    for (let i = 0; i < numberOfMessages; i++) {
-        let line = input.shift();
-        let sumOfDecrypt = line.match(patternCript);
-        if (sumOfDecrypt) {
-            let newCode = generateNewCode(sumOfDecrypt.length, line);
-            line = newCode;
+for (let line of string) {
+    if (counter === 0) {
+        let capitalLetters = line.match(patternForCaps)
+        capitalLetters = capitalLetters[0].split('');
+        capitalLetters.shift();
+        capitalLetters.pop();
+        for (const char of capitalLetters) {
+            caps.push(char);
         }
-        pattern = /@(?<name>[A-Za-z]+)[^@\-!:>]*:(?<population>[\d]+)[^@\-!:>]*!(?<type>[A|D])![^@\-!:>]*->(?<soldierCount>[\d]+)/.exec(line);
-        if (pattern) {
-            let name = pattern.groups.name;
-            let type = pattern.groups.type;
-            if (type === 'A') {
-                attacked.push(name);
-            } else {
-                destroyed.push(name);
+        counter++;
+    } else if (counter === 1) {
+        let infoWords = line.match(patternForStartingLetter);
+        for (let iterator of infoWords) {
+            iterator = iterator.split(':').map(Number);
+            let cap = String.fromCharCode(iterator[0]);
+            let remainingChars = Number(iterator[1]);
+            capLettersAndRemainingLength[cap] = remainingChars;
+        }
+        counter++;
+    } else if (counter === 2) {
+        let words = line.match(finalPattern);
+        for (const iterator of words) {
+            let str = iterator.trim();
+            for (const key in capLettersAndRemainingLength) {
+                if (key === str[0] && str.length === capLettersAndRemainingLength[key] + 1) {
+                    console.log(str);
+                }
             }
         }
-
-
     }
-
-    let sort = attacked.sort((a, b) => a.localeCompare(b));
-    console.log(`Attacked planets: ${attacked.length}`);
-    for (const iterator of sort) {
-        console.log(`-> ${iterator}`);
-    }
-
-    sort = destroyed.sort((a, b) => a.localeCompare(b));
-    console.log(`Destroyed planets: ${destroyed.length}`);
-    for (const iterator of sort) {
-        console.log(`-> ${iterator}`);
-    }
-
-
-    function generateNewCode(number, word) {
-        let newWord = '';
-        for (const char of word) {
-            let code = char.charCodeAt(0);
-            let newCode = code - number;
-            let newChar = String.fromCharCode(newCode);
-            newWord += newChar;
-        }
-        return newWord;
-    }
-
 }
-solve(['2', 'STCDoghudd4=63333$D$0A53333', 'EHfsytsnhf?8555&I&2C9555SR']
-
-
-
+}
+solve([
+    'sdsGGasAOTPWEEEdas$AOTP$|a65:1.2s65:03d79:01ds84:02! -80:07++ABs90:1.1|adsaArmyd Gara So La Arm Armyw21 Argo O daOfa Or Ti Sar saTheww The Parahaos'
+]
 );
